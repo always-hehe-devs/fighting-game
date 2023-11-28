@@ -47,6 +47,14 @@ const player = new Fighter({
             imageSrc: './img/samuraiMack/Attack1.png',
             framesMax: 6
         },
+        takeHit: {
+            imageSrc: './img/samuraiMack/Take hit.png',
+            framesMax: 4
+        },
+        death: {
+            imageSrc: './img/samuraiMack/Death.png',
+            framesMax: 6
+        },
     },
     attackBox: {
         offset:{x:100,y:50},width:160, height: 50
@@ -90,6 +98,14 @@ const enemy = new Fighter({
             imageSrc: './img/kenji/Attack1.png',
             framesMax: 4
         },
+        takeHit: {
+            imageSrc: './img/kenji/Take hit.png',
+            framesMax: 3
+        },
+        death: {
+            imageSrc: './img/kenji/Death.png',
+            framesMax: 7
+        },
     },
     attackBox: {
         offset:{x:-170,y:50},width:170, height: 50
@@ -126,6 +142,8 @@ function animate() {
 
     background.update()
     shop.update()
+    c.fillStyle = 'rgba(255,255,255,0.15)'
+    c.fillRect(0,0,canvas.width, canvas.height)
     player.update();
     enemy.update();
 
@@ -173,9 +191,12 @@ function animate() {
         player.isAttacking
         && player.framesCurrent === 4
     ) {
+        enemy.takeHit()
         player.isAttacking = false;
-        enemy.health -= 20;
-        document.querySelector('#enemyHealth').style.width = enemy.health + '%'
+
+        gsap.to('#enemyHealth', {
+            width: enemy.health + '%'
+        })
     }
 
     // if player misses
@@ -189,8 +210,11 @@ function animate() {
         && enemy.framesCurrent === 2
     ) {
         enemy.isAttacking = false;
-        player.health -= 20;
-        document.querySelector('#playerHealth').style.width = player.health + '%'
+        player.takeHit()
+
+        gsap.to('#playerHealth', {
+            width: player.health + '%'
+        })
     }
     if(enemy.isAttacking && enemy.framesCurrent === 2) {
         enemy.isAttacking = false
@@ -206,39 +230,45 @@ animate();
 
 
 window.addEventListener('keydown', (event) => {
-    switch (event.key) {
-        case 'd':
-            keys.d.pressed = true
-            player.lastKey = 'd'
-            break
-        case 'a':
-            keys.a.pressed = true
-            player.lastKey = 'a'
-            break
-        case 'w':
-            keys.w.pressed = true
-            player.lastKey = 'w'
-            player.velocity.y = -20;
-            break
-        case 'ArrowRight':
-            keys.ArrowRight.pressed = true
-            enemy.lastKey = 'ArrowRight'
-            break
-        case 'ArrowLeft':
-            keys.ArrowLeft.pressed = true
-            enemy.lastKey = 'ArrowLeft'
-            break
-        case 'ArrowUp':
-            keys.ArrowUp.pressed = true
-            enemy.lastKey = 'ArrowUp'
-            enemy.velocity.y = -20;
-            break
-        case ' ':
-            player.attack()
-            break
-        case 'ArrowDown':
-            enemy.attack()
-            break
+
+    if (!player.dead) {
+        switch (event.key) {
+            case 'd':
+                keys.d.pressed = true
+                player.lastKey = 'd'
+                break
+            case 'a':
+                keys.a.pressed = true
+                player.lastKey = 'a'
+                break
+            case 'w':
+                keys.w.pressed = true
+                player.velocity.y = -20;
+                break
+            case ' ':
+                player.attack()
+                break
+        }
+    }
+
+    if (!enemy.dead) {
+        switch (event.key) {
+            case 'ArrowRight':
+                keys.ArrowRight.pressed = true
+                enemy.lastKey = 'ArrowRight'
+                break
+            case 'ArrowLeft':
+                keys.ArrowLeft.pressed = true
+                enemy.lastKey = 'ArrowLeft'
+                break
+            case 'ArrowUp':
+                keys.ArrowUp.pressed = true
+                enemy.velocity.y = -20;
+                break
+            case 'ArrowDown':
+                enemy.attack()
+                break
+        }
     }
 })
 
